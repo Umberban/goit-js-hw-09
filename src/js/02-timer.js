@@ -6,9 +6,8 @@ const options = {
     time_24hr: true,
     defaultDate: new Date(),
     minuteIncrement: 1,
-    onClose(selectedDates) {
-    //   console.log(selectedDates[0]);
-    if(selectedDates[0]<    new Date()){
+    onClose([selectedDates]) {
+    if(selectedDates < Date.now()){
         btnStartEl.disabled = true;
         Notiflix.Notify.failure("Please choose a date in the future");
     }else{btnStartEl.disabled = false;}
@@ -17,7 +16,10 @@ const options = {
 const btnStartEl = document.querySelector("button[data-start]");
 const inputDateEl = document.getElementById("datetime-picker");
 const containerEl = document.querySelector(".timer")
+// date choose
+const dateTime = flatpickr(inputDateEl,options);
 let timerid = null;
+
 function convertMs(ms) {
     // Number of milliseconds per unit of time
     const second = 1000;
@@ -36,29 +38,33 @@ function convertMs(ms) {
   
     return { days, hours, minutes, seconds };
   }
+
+
   function addLeadingZero(value){
-    value = String(value);
-    if(value.length<2){
-        value  = value.padStart(2, 0)
-        return value;  }
-    return value; 
+    return String(value).padStart(2, 0) }
+    
+  function setDate({ days, hours, minutes, seconds } ){
+    containerEl.querySelector("[data-days]").textContent = addLeadingZero(days);
+    containerEl.querySelector("[data-hours]").textContent = addLeadingZero(hours);
+    containerEl.querySelector("[data-minutes]").textContent = addLeadingZero(minutes);
+    containerEl.querySelector("[data-seconds]").textContent = addLeadingZero(seconds);
   }
-  const dateTime = flatpickr(inputDateEl,options);
+
   function timer(){
     const date = new Date();
     const x = dateTime.selectedDates[0].getTime()-date.getTime();
     if(x<=0){
         return;
     }
-    const { days, hours, minutes, seconds } = convertMs(x);
-    containerEl.querySelector("[data-days]").textContent = addLeadingZero(days);
-    containerEl.querySelector("[data-hours]").textContent = addLeadingZero(hours);
-    containerEl.querySelector("[data-minutes]").textContent = addLeadingZero(minutes);
-    containerEl.querySelector("[data-seconds]").textContent = addLeadingZero(seconds);
+    setDate(convertMs(x));
   }
+
+
   function clickHandler(){
     timerId = setInterval(timer,1000)
     btnStartEl.disabled=true;
   }
+
+
   btnStartEl.addEventListener('click',clickHandler)
   
